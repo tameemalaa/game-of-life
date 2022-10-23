@@ -3,6 +3,8 @@ from typing import *
 
 ALIVE= 1
 DEAD= 0
+ALICE_UTF8= u"\u2588" 
+DEAD_UTF8 = u"\u0020"
 
 class Board:
     def __init__(self, width: int= None, height: int= None, file:TextIO= None)-> None:
@@ -44,3 +46,30 @@ class Board:
             for j in range(len(self.state[i])):
                 file.write(self.state[i][j])
                 if j == len(self.state[i]) -1 :file.write('\n')
+
+    def update_state(self)-> None:
+            new_state = self.state
+            for i in range(len(new_state)):
+                for j in range(len(new_state[i])):
+                    neighbors = -self.state[i][j] 
+                    for x in range(i-1,i+2):
+                        for y in range(j-1,j+2):
+                            neighbors += self.state[x][y] if x >= 0 and y >= 0 and x < self.height and y < self.width else 0
+                    if self.state[i][j]:
+                        if neighbors <= 1* ALIVE or neighbors > 3* ALIVE : new_state[i][j] = 0
+                    else:
+                        if neighbors == 3* ALIVE: new_state[i][j] = 1
+            self.state = new_state
+
+    def __str__(self)-> str:
+            to_print = ""
+            for row in self.state:
+                line = ""
+                for i in row:
+                    line+= ALICE_UTF8 if i == ALIVE else DEAD_UTF8
+                to_print += line + '\n'
+            return to_print
+        
+    def __repr__(self)-> str:
+            return self.state
+        
