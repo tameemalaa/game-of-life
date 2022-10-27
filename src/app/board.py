@@ -1,10 +1,11 @@
 from random import choice
 from typing import *
+from copy import deepcopy
 
 ALIVE= 1
 DEAD= 0
-ALICE_UTF8= u"\u2588" 
-DEAD_UTF8 = u"\u0020"
+ALIVE_UTF8= u"\u2588" 
+DEAD_UTF8 = u"\u0020" 
 
 class Board:
     def __init__(self, width: int= None, height: int= None, file:TextIO= None)-> None:
@@ -26,19 +27,19 @@ class Board:
     @staticmethod
     def validate_lines(lines: list)-> bool:
         width = len(lines[0])
-        for i in range(lines):
-            if width != lines[i]: raise ValueError('File dimensions are not valid')
-            for j in range(lines[i]):
-                if lines[i][j] != ALIVE or lines[i][j] != DEAD: raise ValueError(f'Value in row:{i} column:{j} is not valid')
+        for i in range(len(lines)):
+            if width != len(lines[i]): raise ValueError('File dimensions are not valid')
+            for j in range(len(lines[i])):
+                if int(lines[i][j]) != ALIVE and int(lines[i][j]) != DEAD: raise ValueError(f'Value in row:{i} column:{j} is not valid')
         return True
         
     def fill_from_file(self)-> None:
         if self.file:
-            lines= [ i.strip for i in self.file.readlines()]
+            lines= [ i.strip() for i in self.file.readlines()]
             if self.validate_lines(lines):
                 self.height= len(lines)
                 self.width= len(lines[0])
-                self.state= [[int(lines[i][j]) for i in range(self.height)] for j in range(self.width)] 
+                self.state= [[int(lines[i][j]) for j in range(self.width)] for i in range(self.height)] 
         else : raise ValueError('No file has been provided')
 
     def save_to_file(self,file: TextIO)-> None:
@@ -48,28 +49,30 @@ class Board:
                 if j == len(self.state[i]) -1 :file.write('\n')
 
     def update_state(self)-> None:
-            new_state = self.state
+            new_state = deepcopy(self.state)
             for i in range(len(new_state)):
                 for j in range(len(new_state[i])):
                     neighbors = -self.state[i][j] 
                     for x in range(i-1,i+2):
                         for y in range(j-1,j+2):
-                            neighbors += self.state[x][y] if x >= 0 and y >= 0 and x < self.height and y < self.width else 0
+                            if x >= 0 and y >= 0 and x < self.height and y < self.width :
+                                neighbors += self.state[x][y] 
                     if self.state[i][j]:
                         if neighbors <= 1* ALIVE or neighbors > 3* ALIVE : new_state[i][j] = 0
                     else:
                         if neighbors == 3* ALIVE: new_state[i][j] = 1
-            self.state = new_state
-
+            self.state = deepcopy(new_state)
+            
     def __str__(self)-> str:
             to_print = ""
             for row in self.state:
                 line = ""
                 for i in row:
-                    line+= ALICE_UTF8 if i == ALIVE else DEAD_UTF8
+                    line+= ALIVE_UTF8 if i == ALIVE else DEAD_UTF8
                 to_print += line + '\n'
             return to_print
         
     def __repr__(self)-> str:
             return self.state
         
+    
