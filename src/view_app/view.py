@@ -25,6 +25,7 @@ class View():
         self.current_screen.resizable(False,False)
         self.current_screen.configure(bg =BACKGROUND_COLOR)
         self.vcmd = (self.current_screen.register(self.number_check))
+        self.settings = Settings(mode=0,ending_round=0)
 
     def initialize_welcome_screen(self) -> None:
         self.initialize_base_screen()
@@ -63,7 +64,19 @@ class View():
         self.current_screen.mainloop()
         
     def initialize_create_game_screen(self) -> None:
-        pass
+        self.initialize_base_screen()
+        width_var = IntVar(self.current_screen,100)
+        height_var = IntVar(self.current_screen,100)
+        ending_round_var = IntVar(self.current_screen,0)
+        width = Entry(self.current_screen, validate='all', validatecommand=(self.vcmd, '%P'),width=10, font=(FONT_FAMILY,BIG_FONT_SIZE), textvariable=width_var).place(relx = 0.7, rely = 0.1, anchor = CENTER)
+        height = Entry(self.current_screen, validate='all', validatecommand=(self.vcmd, '%P'),width=10, font=(FONT_FAMILY,BIG_FONT_SIZE), textvariable=height_var).place(relx = 0.7, rely = 0.4, anchor = CENTER)
+        ending_round = Entry(self.current_screen, validate='all', validatecommand=(self.vcmd, '%P'),width=10, font=(FONT_FAMILY,BIG_FONT_SIZE), textvariable=ending_round_var).place(relx = 0.7, rely = 0.7, anchor = CENTER)
+        width_label= Label(self.current_screen, text="Grid Width", height=1, font=(FONT_FAMILY,SMALL_FONT_SIZE),fg = FONT_COLOR, bg= BUTTON_COLOR).place(relx = 0.3, rely = 0.1, anchor = CENTER)
+        height_label= Label(self.current_screen, text="Grid Height", height=1, font=(FONT_FAMILY,SMALL_FONT_SIZE),fg = FONT_COLOR, bg= BUTTON_COLOR).place(relx = 0.3, rely = 0.4, anchor = CENTER)
+        ending_round_label= Label(self.current_screen, text="End Round: 0 = inf", height=1, font=(FONT_FAMILY,SMALL_FONT_SIZE),fg = FONT_COLOR, bg= BUTTON_COLOR).place(relx = 0.3, rely = 0.7, anchor = CENTER)
+        start_game_button = Button(self.current_screen, text = 'Start Game', width = 20, height = 1, bg = BUTTON_COLOR, fg = FONT_COLOR, borderwidth = BUTTON_BOARDER_WIDTH,
+        font=(FONT_FAMILY,BIG_FONT_SIZE), activebackground = FONT_COLOR, command = lambda : self.create_parameters(mode=self.starting_mode,width=width_var.get(),height=height_var.get(),ending_round=ending_round_var.get())).place(relx = 0.5, rely = 0.9, anchor = CENTER)
+        self.current_screen.mainloop()
     
     def number_check(self, input:str) -> bool:
         if str.isdigit(input) or input == "":
@@ -72,4 +85,15 @@ class View():
             return False
 
     def create_parameters(self,**kwargs) -> None:
-        pass
+        self.current_screen.destroy()
+        self.settings = Settings(**kwargs)
+        
+    def main(self):
+        self.initialize_welcome_screen()
+        self.game = Game(self.settings)
+        print(self.settings)
+        self.game.start()
+
+if __name__ == "__main__":
+    v = View()
+    v.main()
